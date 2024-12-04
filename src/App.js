@@ -1,24 +1,49 @@
-import logo from './logo.svg';
 import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, BrowserRouter } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import DashboardPage from './pages/DashboardPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import AddExpensePage from './pages/AddExpensePage';
+import NotFoundPage from './pages/NotFoundPage';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#00ff7f', // Green for buttons, links, etc.
+    },
+    background: {
+      default: '#000', // Black background
+    },
+    text: {
+      primary: '#fff', // White text
+    },
+  },
+  typography: {
+    fontFamily: 'Poppins, sans-serif',
+  },
+});
+
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+      <Route path="/" element={<DashboardPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<SignupPage />} />
+        <Route path="/add-expense" element={<AddExpensePage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
