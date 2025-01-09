@@ -18,12 +18,12 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('token'); // Remove token to log out
-    navigate('/login'); // Redirect to signup page
+    navigate('/login'); // Redirect to login page
     handleMenuClose();
   };
 
   const handleLoginSignup = () => {
-    navigate('/login'); // Redirect to signup/login page
+    navigate('/login'); // Redirect to login page
   };
 
   return (
