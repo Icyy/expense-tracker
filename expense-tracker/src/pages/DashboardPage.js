@@ -65,7 +65,7 @@ const DashboardPage = () => {
   const handleSubmit = async () => {
     try {
       const newExpense = await addExpense(expenseForm);
-      setExpenses([...expenses, newExpense]); // Update local expenses list
+      setExpenses((prevExpenses) => [newExpense, ...prevExpenses]); // Adds the new expense at the start
       setOpenModal(false); // Close the modal
       setExpenseForm({
         amount: "",
@@ -76,6 +76,11 @@ const DashboardPage = () => {
     } catch (err) {
       setError("Failed to add expense");
     }
+  };
+
+  const handleDeleteExpense = (id) => {
+    // Logic to delete an expense
+    setExpenses(expenses.filter(expense => expense._id !== id));
   };
 
   if (loading) {
@@ -106,8 +111,15 @@ const DashboardPage = () => {
         View and manage your expenses easily.
       </Typography>
 
-      {/* Show error message if any */}
-      {/* {error && <Typography color="error">{error}</Typography>} */}
+      {/* Add Expense Button */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleAddExpense}
+        sx={{ fontWeight: "bold", marginBottom: 3 }}
+      >
+        Add Expense
+      </Button>
 
       {/* Show message if no expenses are found */}
       {!error && expenses.length === 0 && (
@@ -122,18 +134,10 @@ const DashboardPage = () => {
           <Typography variant="h6" color="white" gutterBottom>
             No expenses found. Start adding your expenses.
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddExpense}
-            sx={{ fontWeight: "bold", alignItems: "center" }}
-          >
-            Add Expense
-          </Button>
         </Box>
       )}
 
-      {/* Display expenses if available */}
+      {/* Display the most recent expense in a table-like structure */}
       {!error && expenses.length > 0 && (
         <Grid
           container
@@ -141,110 +145,67 @@ const DashboardPage = () => {
           justifyContent="center"
           sx={{ color: "black" }}
         >
-          {expenses.map((expense) => (
-            <Grid item xs={12} sm={6} md={4} key={expense._id}>
-              <Card>
-                <CardContent sx={{ color: "black" }}>
-                  <Typography variant="h6">
-                    Amount: ₹{expense.amount}
-                  </Typography>
-                  <Typography variant="body1">
-                    Category: {expense.category}
-                  </Typography>
-                  <Typography variant="body2">
-                    Description: {expense.description}
-                  </Typography>
-                  <Typography variant="body2">
-                    Date: {new Date(expense.date).toLocaleDateString()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-          <Dialog open={openModal} onClose={handleCloseModal}>
-            <DialogTitle>Add New Expense</DialogTitle>
-            <DialogContent>
-              <TextField
-                label="Amount"
-                type="number"
-                fullWidth
-                name="amount"
-                value={expenseForm.amount}
-                onChange={handleChange}
-                sx={{ marginBottom: 2, color: "black !important" }}
-              />
-
-              {/* Category Dropdown */}
-              <FormControl fullWidth sx={{ marginBottom: 2 }}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  name="category"
-                  value={expenseForm.category}
-                  onChange={handleChange}
-                  label="Category"
-                  sx={{ color: "black !important" }}
+          {/* Most recent expense card */}
+          <Grid item xs={12} sm={6} md={6}>
+            <Card>
+              <CardContent sx={{ color: "black" }}>
+                <Typography variant="h6">Most Recent Expense</Typography>
+                <Box
+                  component="table"
+                  sx={{
+                    width: "100%",
+                    marginTop: 2,
+                    borderCollapse: "collapse",
+                  }}
                 >
-                  <MenuItem value="food" sx={{ color: "black" }}>
-                    Food
-                  </MenuItem>
-                  <MenuItem value="transport" sx={{ color: "black" }}>
-                    Transport
-                  </MenuItem>
-                  <MenuItem value="utilities" sx={{ color: "black" }}>
-                    Utilities
-                  </MenuItem>
-                  <MenuItem value="entertainment" sx={{ color: "black" }}>
-                    Entertainment
-                  </MenuItem>
-                  <MenuItem value="others" sx={{ color: "black" }}>
-                    Others
-                  </MenuItem>
-                </Select>
-              </FormControl>
+                  <Box component="thead">
+                    <Box component="tr">
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}>
+                        Description
+                      </Box>
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}>
+                        Amount
+                      </Box>
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}></Box>
+                    </Box>
+                  </Box>
+                  <Box component="tbody">
+                    <Box component="tr">
+                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
+                        {expenses[0].description}
+                      </Box>
+                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
+                        ₹{expenses[0].amount}
+                      </Box>
+                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => handleDeleteExpense(expenses[0]._id)}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
 
-              <TextField
-                label="Description"
-                fullWidth
-                name="description"
-                value={expenseForm.description}
-                onChange={handleChange}
-                sx={{ marginBottom: 2, color: "black !important" }}
-              />
-              <TextField
-                label="Date"
-                type="date"
-                fullWidth
-                name="date"
-                value={expenseForm.date}
-                onChange={handleChange}
-                sx={{ marginBottom: 2, color: "black !important" }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseModal} color="secondary">
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} color="primary">
-                Add Expense
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {/* Analysis chart card */}
+          <Grid item xs={12} sm={6} md={6}>
+            <Card sx={{ height: "100%" }}>
+              <CardContent sx={{ color: "black" }}>
+                <Typography variant="h6">Expense Analysis</Typography>
+                {/* Chart content will be here */}
+                <Box sx={{ height: "100%", backgroundColor: "#f0f0f0" }}>
+                  {/* Insert your chart here */}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      )}
-
-      {/* Show Sign up button if not logged in */}
-      {!localStorage.getItem("token") && (
-        <Button
-          variant="contained"
-          color="primary"
-          href="/register"
-          sx={{ marginTop: 2, fontWeight: "bold" }}
-        >
-          Sign up
-        </Button>
       )}
 
       {/* Add Expense Modal */}
@@ -258,7 +219,7 @@ const DashboardPage = () => {
             name="amount"
             value={expenseForm.amount}
             onChange={handleChange}
-            sx={{ marginBottom: 2, color: "black !important" }}
+            sx={{ marginBottom: 2, input: { color: 'black' } }}
           />
 
           {/* Category Dropdown */}
@@ -295,7 +256,7 @@ const DashboardPage = () => {
             name="description"
             value={expenseForm.description}
             onChange={handleChange}
-            sx={{ marginBottom: 2, color: "black !important" }}
+            sx={{ marginBottom: 2,  input: { color: 'black' } }}
           />
           <TextField
             label="Date"
@@ -304,7 +265,7 @@ const DashboardPage = () => {
             name="date"
             value={expenseForm.date}
             onChange={handleChange}
-            sx={{ marginBottom: 2, color: "black !important" }}
+            sx={{ marginBottom: 2,  input: { color: 'black' } }}
             InputLabelProps={{
               shrink: true,
             }}
