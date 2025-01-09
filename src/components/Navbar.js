@@ -1,35 +1,61 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { AppBar, Toolbar, Typography, IconButton, Button, Avatar, Menu, MenuItem } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const navStyle = {
-    background: '#000',
-    color: '#fff',
-    display: 'flex',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    padding: '10px 0',
-    position: 'sticky',
-    top: '0',
-    width: '100%',
-    zIndex: 1000,
-    boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.5)',
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const isLoggedIn = Boolean(localStorage.getItem('token')); // Check if user is logged in
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const linkStyle = {
-    color: '#00ff7f',
-    // textDecoration: 'none',
-    // fontSize: '18px',
-    // fontWeight: 'bold',
-    // fontFamily: 'open sans'
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove token to log out
+    navigate('/login'); // Redirect to signup page
+    handleMenuClose();
+  };
+
+  const handleLoginSignup = () => {
+    navigate('/login'); // Redirect to signup/login page
   };
 
   return (
-    <nav style={navStyle}>
-      <Link to="/" style={linkStyle}>Dashboard</Link>
-      <Link to="/login" style={linkStyle}>Login</Link>
-      <Link to="/register" style={linkStyle}>Register</Link>
-    </nav>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          Expense Tracker
+        </Typography>
+        {isLoggedIn ? (
+          <>
+            <IconButton onClick={handleMenuOpen} color="black">
+              <Avatar alt="User Icon" />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleLogout} sx={{color:'black'}}>Logout</MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <Button
+            color="black"
+            onClick={handleLoginSignup}
+            sx={{ fontWeight: 'bold' }}
+          >
+            Signup / Login
+          </Button>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 

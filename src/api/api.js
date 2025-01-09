@@ -30,8 +30,18 @@ export const register = async (username, email, password) => {
 };
 
 export const getExpenses = async () => {
-  const response = await api.get('/expenses');
-  return response.data;
+    const token = localStorage.getItem('token');  // Get the token from local storage
+    if (!token) {
+      throw new Error("No token found");  // Handle case if no token is found
+    }
+  
+    const response = await api.get('/expenses', {
+      headers: {
+        Authorization: `Bearer ${token}`  // Include the token in the Authorization header
+      }
+    });
+  
+    return response.data;
 };
 
 export const addExpense = async (expense) => {

@@ -52,7 +52,7 @@ const DashboardPage = () => {
       </Typography>
       
       {/* Show error message if any */}
-      {error && <Typography color="error">{error}</Typography>}
+      {/* {error && <Typography color="error">{error}</Typography>} */}
 
       {/* Show message if no expenses are found */}
       {!error && expenses.length === 0 && (
