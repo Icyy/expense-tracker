@@ -61,6 +61,9 @@ const DashboardPage = () => {
       [name]: value,
     });
   };
+  useEffect(() => {
+    console.log(expenses);
+  }, [expenses]);
 
   const handleSubmit = async () => {
     try {
@@ -80,7 +83,7 @@ const DashboardPage = () => {
 
   const handleDeleteExpense = (id) => {
     // Logic to delete an expense
-    setExpenses(expenses.filter(expense => expense._id !== id));
+    setExpenses(expenses.filter((expense) => expense._id !== id));
   };
 
   if (loading) {
@@ -160,33 +163,57 @@ const DashboardPage = () => {
                 >
                   <Box component="thead">
                     <Box component="tr">
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black" }}
+                      >
                         Description
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black" }}
+                      >
                         Amount
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black" }}></Box>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black" }}
+                      ></Box>
                     </Box>
                   </Box>
                   <Box component="tbody">
-                    <Box component="tr">
-                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
-                        {expenses[0].description}
-                      </Box>
-                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
-                        ₹{expenses[0].amount}
-                      </Box>
-                      <Box component="td" sx={{ padding: "8px", border: "1px solid black" }}>
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() => handleDeleteExpense(expenses[0]._id)}
-                        >
-                          Delete
-                        </Button>
-                      </Box>
-                    </Box>
+                    {expenses.map((expense, id) => {
+                      return (
+                        <>
+                          <Box component="tr" key={id}>
+                            <Box
+                              component="td"
+                              sx={{ padding: "8px", border: "1px solid black" }}
+                            >
+                              {expense.description}
+                            </Box>
+                            <Box
+                              component="td"
+                              sx={{ padding: "8px", border: "1px solid black" }}
+                            >
+                              ₹{expense.amount}
+                            </Box>
+                            <Box
+                              component="td"
+                              sx={{ padding: "8px", border: "1px solid black" }}
+                            >
+                              <Button
+                                variant="contained"
+                                color="secondary"
+                                onClick={() => handleDeleteExpense(expense._id)}
+                              >
+                                Delete
+                              </Button>
+                            </Box>
+                          </Box>
+                        </>
+                      );
+                    })}
                   </Box>
                 </Box>
               </CardContent>
@@ -219,7 +246,7 @@ const DashboardPage = () => {
             name="amount"
             value={expenseForm.amount}
             onChange={handleChange}
-            sx={{ marginBottom: 2, input: { color: 'black' } }}
+            sx={{ marginBottom: 2, input: { color: "black" } }}
           />
 
           {/* Category Dropdown */}
@@ -256,7 +283,7 @@ const DashboardPage = () => {
             name="description"
             value={expenseForm.description}
             onChange={handleChange}
-            sx={{ marginBottom: 2,  input: { color: 'black' } }}
+            sx={{ marginBottom: 2, input: { color: "black" } }}
           />
           <TextField
             label="Date"
@@ -265,7 +292,7 @@ const DashboardPage = () => {
             name="date"
             value={expenseForm.date}
             onChange={handleChange}
-            sx={{ marginBottom: 2,  input: { color: 'black' } }}
+            sx={{ marginBottom: 2, input: { color: "black" } }}
             InputLabelProps={{
               shrink: true,
             }}
