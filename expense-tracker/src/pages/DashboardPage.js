@@ -147,7 +147,7 @@ const DashboardPage = () => {
             alignItems: "center",
           }}
         >
-          <Typography sx={{color:'black'}} variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom>
             No expenses found. Start adding your expenses.
           </Typography>
         </Box>
