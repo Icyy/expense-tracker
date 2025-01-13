@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getExpenses, addExpense, deleteExpense } from "../api/api"; 
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
 
@@ -186,8 +187,9 @@ const DashboardPage = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handleDeleteExpense(expense._id)}
+                            sx={{alignContent:'center'}}
                           >
-                            Delete
+                            <DeleteIcon/>
                           </Button>
                         </Box>
                       </Box>
