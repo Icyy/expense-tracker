@@ -16,7 +16,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import { getExpenses, addExpense } from "../api/api"; // Ensure the import paths are correct
+import { getExpenses, addExpense, deleteExpense } from "../api/api"; // Ensure the import paths are correct
 
 const DashboardPage = () => {
   const [expenses, setExpenses] = useState([]);
@@ -81,9 +81,21 @@ const DashboardPage = () => {
     }
   };
 
-  const handleDeleteExpense = (id) => {
+  const handleDeleteExpense = async (id) => {
     // Logic to delete an expense
-    setExpenses(expenses.filter((expense) => expense._id !== id));
+    if (window.confirm("Are you sure you want to delete this expense?")) {
+      try {
+        console.log(id)
+        await deleteExpense(id);
+        const updatedExpenses = expenses.filter(
+          (expense) => expense._id !== id
+        );
+        setExpenses(updatedExpenses);
+        console.log(updatedExpenses)
+      } catch (error) {
+        setError("Failed to delete expense");
+      }
+    }
   };
 
   if (loading) {
