@@ -17,8 +17,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { getExpenses, addExpense, deleteExpense } from "../api/api"; 
-import DeleteIcon from '@mui/icons-material/Delete';
+import { getExpenses, addExpense, deleteExpense, updateExpense } from "../api/api";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
 
@@ -27,6 +27,8 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedExpenseId, setSelectedExpenseId] = useState(null);
   const [expenseForm, setExpenseForm] = useState({
     amount: "",
     category: "",
@@ -50,6 +52,25 @@ const DashboardPage = () => {
   }, []);
 
   const handleAddExpense = () => {
+    setEditMode(false);
+    setExpenseForm({
+      amount: "",
+      category: "",
+      description: "",
+      date: "",
+    });
+    setOpenModal(true);
+  };
+
+  const handleEditExpense = (expense) => {
+    setEditMode(true);
+    setSelectedExpenseId(expense._id);
+    setExpenseForm({
+      amount: expense.amount,
+      category: expense.category,
+      description: expense.description,
+      date: expense.date.split("T")[0], // Ensure proper date format
+    });
     setOpenModal(true);
   };
 
@@ -67,8 +88,17 @@ const DashboardPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const newExpense = await addExpense(expenseForm);
-      setExpenses((prevExpenses) => [newExpense, ...prevExpenses]);
+      if (editMode) {
+        const updatedExpense = await updateExpense(selectedExpenseId, expenseForm);
+        setExpenses((prevExpenses) =>
+          prevExpenses.map((expense) =>
+            expense._id === selectedExpenseId ? updatedExpense : expense
+          )
+        );
+      } else {
+        const newExpense = await addExpense(expenseForm);
+        setExpenses((prevExpenses) => [newExpense, ...prevExpenses]);
+      }
       setOpenModal(false);
       setExpenseForm({
         amount: "",
@@ -77,7 +107,7 @@ const DashboardPage = () => {
         date: "",
       });
     } catch (err) {
-      setError("Failed to add expense");
+      setError(editMode ? "Failed to update expense" : "Failed to add expense");
     }
   };
 
@@ -164,32 +194,41 @@ const DashboardPage = () => {
                 <Box component="table" sx={{ width: "100%", marginTop: 2, borderCollapse: "collapse" }}>
                   <Box component="thead">
                     <Box component="tr">
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color:'black' }}>
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
                         Description
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color:'black' }}>
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
                         Amount
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color:'black' }}>Delete</Box>
+                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                        Actions
+                      </Box>
                     </Box>
                   </Box>
                   <Box component="tbody">
                     {expenses.map((expense, id) => (
                       <Box component="tr" key={id}>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black",color:'black' }}>
+                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
                           {expense.description}
                         </Box>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black",color:'black' }}>
+                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
                           ₹{expense.amount}
                         </Box>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black",color:'black' }}>
+                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => handleEditExpense(expense)}
+                            sx={{ marginRight: 1 }}
+                          >
+                            Edit
+                          </Button>
                           <Button
                             variant="contained"
                             color="primary"
                             onClick={() => handleDeleteExpense(expense._id)}
-                            sx={{alignContent:'center'}}
                           >
-                            <DeleteIcon/>
+                            <DeleteIcon />
                           </Button>
                         </Box>
                       </Box>
@@ -231,8 +270,10 @@ const DashboardPage = () => {
       )}
 
       <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle sx={{color:'black'}}>Add New Expense</DialogTitle>
-        <DialogContent sx={{color:'black'}}>
+        <DialogTitle sx={{ color: "black" }}>
+          {editMode ? "Edit Expense" : "Add New Expense"}
+        </DialogTitle>
+        <DialogContent sx={{ color: "black" }}>
           <TextField
             label="Amount"
             type="number"
@@ -240,9 +281,9 @@ const DashboardPage = () => {
             name="amount"
             value={expenseForm.amount}
             onChange={handleChange}
-            sx={{ marginBottom: 2, }}
+            sx={{ marginBottom: 2 }}
             InputProps={{
-              style:{color:'black'}
+              style: { color: "black" },
             }}
           />
           <FormControl fullWidth sx={{ marginBottom: 2 }}>
@@ -252,13 +293,23 @@ const DashboardPage = () => {
               value={expenseForm.category}
               onChange={handleChange}
               label="Category"
-              sx={{color:'black'}}
+              sx={{ color: "black" }}
             >
-              <MenuItem sx={{color:'black'}} value="food">Food</MenuItem>
-              <MenuItem sx={{color:'black'}} value="transport">Transport</MenuItem>
-              <MenuItem sx={{color:'black'}} value="utilities">Utilities</MenuItem>
-              <MenuItem sx={{color:'black'}} value="entertainment">Entertainment</MenuItem>
-              <MenuItem sx={{color:'black'}} value="others">Others</MenuItem>
+              <MenuItem sx={{ color: "black" }} value="food">
+                Food
+              </MenuItem>
+              <MenuItem sx={{ color: "black" }} value="transport">
+                Transport
+              </MenuItem>
+              <MenuItem sx={{ color: "black" }} value="utilities">
+                Utilities
+              </MenuItem>
+              <MenuItem sx={{ color: "black" }} value="entertainment">
+                Entertainment
+              </MenuItem>
+              <MenuItem sx={{ color: "black" }} value="others">
+                Others
+              </MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -267,9 +318,9 @@ const DashboardPage = () => {
             name="description"
             value={expenseForm.description}
             onChange={handleChange}
-            sx={{ marginBottom: 2,}}
+            sx={{ marginBottom: 2 }}
             InputProps={{
-              style:{color:'black'}
+              style: { color: "black" },
             }}
           />
           <TextField
@@ -279,12 +330,12 @@ const DashboardPage = () => {
             name="date"
             value={expenseForm.date}
             onChange={handleChange}
-            sx={{ marginBottom: 2, color:'black' }}
+            sx={{ marginBottom: 2 }}
             InputLabelProps={{
               shrink: true,
             }}
             InputProps={{
-              style:{color:'black'}
+              style: { color: "black" },
             }}
           />
         </DialogContent>
@@ -292,8 +343,13 @@ const DashboardPage = () => {
           <Button onClick={handleCloseModal} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary" sx={{border:'1px solid'}}>
-            Add Expense
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            sx={{ border: "1px solid" }}
+          >
+            {editMode ? "Save Changes" : "Add Expense"}
           </Button>
         </DialogActions>
       </Dialog>
