@@ -15,15 +15,26 @@ import {
   Select,
   FormControl,
   InputLabel,
+  InputAdornment,
 } from "@mui/material";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { getExpenses, addExpense, deleteExpense, updateExpense } from "../api/api";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SearchIcon from "@mui/icons-material/Search";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
 
 const DashboardPage = () => {
   const [expenses, setExpenses] = useState([]);
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -41,6 +52,7 @@ const DashboardPage = () => {
       try {
         const data = await getExpenses();
         setExpenses(data);
+        setFilteredExpenses(data); // Initialize filteredExpenses with all data
       } catch (err) {
         setError("Failed to load expenses");
       } finally {
@@ -69,7 +81,7 @@ const DashboardPage = () => {
       amount: expense.amount,
       category: expense.category,
       description: expense.description,
-      date: expense.date.split("T")[0], // Ensure proper date format
+      date: expense.date.split("T")[0], 
     });
     setOpenModal(true);
   };
@@ -95,9 +107,15 @@ const DashboardPage = () => {
             expense._id === selectedExpenseId ? updatedExpense : expense
           )
         );
+        setFilteredExpenses((prevExpenses) =>
+          prevExpenses.map((expense) =>
+            expense._id === selectedExpenseId ? updatedExpense : expense
+          )
+        );
       } else {
         const newExpense = await addExpense(expenseForm);
         setExpenses((prevExpenses) => [newExpense, ...prevExpenses]);
+        setFilteredExpenses((prevExpenses) => [newExpense, ...prevExpenses]);
       }
       setOpenModal(false);
       setExpenseForm({
@@ -115,21 +133,40 @@ const DashboardPage = () => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
       try {
         await deleteExpense(id);
-        setExpenses((prevExpenses) => prevExpenses.filter((expense) => expense._id !== id));
+        setExpenses((prevExpenses) =>
+          prevExpenses.filter((expense) => expense._id !== id)
+        );
+        setFilteredExpenses((prevExpenses) =>
+          prevExpenses.filter((expense) => expense._id !== id)
+        );
       } catch (err) {
         setError("Failed to delete expense");
       }
     }
   };
 
-  const categoryData = expenses.reduce((acc, expense) => {
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    // Filter expenses based on the search query
+    const filtered = expenses.filter((expense) =>
+      expense.description.toLowerCase().includes(query)
+    );
+    setFilteredExpenses(filtered);
+  };
+
+  const categoryData = filteredExpenses.reduce((acc, expense) => {
     const category = expense.category;
     const amount = parseFloat(expense.amount);
     acc[category] = (acc[category] || 0) + amount;
     return acc;
   }, {});
 
-  const pieChartData = Object.entries(categoryData).map(([name, value]) => ({ name, value }));
+  const pieChartData = Object.entries(categoryData).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
   if (loading) {
     return (
@@ -159,6 +196,43 @@ const DashboardPage = () => {
         View and manage your expenses easily.
       </Typography>
 
+      <TextField
+        label="Search Expenses"
+        variant="outlined"
+        fullWidth
+        value={searchQuery}
+        onChange={handleSearch}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{color:'#00ff7f'}}/>
+            </InputAdornment>
+          ),
+        }}
+        sx={{
+          marginBottom:'20px',
+          backgroundColor: "black", 
+          borderRadius: "4px",
+          "& .MuiOutlinedInput-root": {
+            "& fieldset": {
+              borderColor: "#00ff7f", // Default border color
+            },
+            "&:hover fieldset": {
+              borderColor: "#1976d2", // Border color on hover
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#1976d2", // Border color when focused
+            },
+          },
+          "& .MuiInputLabel-root": {
+            color: "#00ff7f", // Custom label color
+          },
+          "& .MuiInputLabel-root.Mui-focused": {
+            color: "#00ff7f", // Ensure label stays green when focused
+          },
+        }}
+      />
+
       <Button
         variant="contained"
         color="primary"
@@ -168,7 +242,7 @@ const DashboardPage = () => {
         Add Expense
       </Button>
 
-      {!error && expenses.length === 0 && (
+      {!error && filteredExpenses.length === 0 && (
         <Box
           sx={{
             marginTop: "20vh",
@@ -183,7 +257,7 @@ const DashboardPage = () => {
         </Box>
       )}
 
-      {!error && expenses.length > 0 && (
+      {!error && filteredExpenses.length > 0 && (
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} sm={6} md={6}>
             <Card sx={{ height: "100%" }}>
@@ -191,30 +265,67 @@ const DashboardPage = () => {
                 <Typography variant="h6" sx={{ color: "black" }}>
                   Most Recent Expense
                 </Typography>
-                <Box component="table" sx={{ width: "100%", marginTop: 2, borderCollapse: "collapse" }}>
+                <Box
+                  component="table"
+                  sx={{
+                    width: "100%",
+                    marginTop: 2,
+                    borderCollapse: "collapse",
+                  }}
+                >
                   <Box component="thead">
                     <Box component="tr">
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                      >
                         Description
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                      >
                         Amount
                       </Box>
-                      <Box component="th" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                      <Box
+                        component="th"
+                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                      >
                         Actions
                       </Box>
                     </Box>
                   </Box>
                   <Box component="tbody">
-                    {expenses.map((expense, id) => (
+                    {filteredExpenses.map((expense, id) => (
                       <Box component="tr" key={id}>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                        <Box
+                          component="td"
+                          sx={{
+                            padding: "8px",
+                            border: "1px solid black",
+                            color: "black",
+                          }}
+                        >
                           {expense.description}
                         </Box>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                        <Box
+                          component="td"
+                          sx={{
+                            padding: "8px",
+                            border: "1px solid black",
+                            color: "black",
+                          }}
+                        >
                           ₹{expense.amount}
                         </Box>
-                        <Box component="td" sx={{ padding: "8px", border: "1px solid black", color: "black" }}>
+                        <Box
+                          component="td"
+                          sx={{
+                            padding: "8px",
+                            border: "1px solid black",
+                            color: "black",
+                          }}
+                        >
                           <Button
                             variant="contained"
                             color="secondary"
@@ -256,7 +367,10 @@ const DashboardPage = () => {
                       label
                     >
                       {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -281,48 +395,29 @@ const DashboardPage = () => {
             name="amount"
             value={expenseForm.amount}
             onChange={handleChange}
-            sx={{ marginBottom: 2 }}
-            InputProps={{
-              style: { color: "black" },
-            }}
+            margin="dense"
           />
-          <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              name="category"
-              value={expenseForm.category}
-              onChange={handleChange}
-              label="Category"
-              sx={{ color: "black" }}
-            >
-              <MenuItem sx={{ color: "black" }} value="food">
-                Food
-              </MenuItem>
-              <MenuItem sx={{ color: "black" }} value="transport">
-                Transport
-              </MenuItem>
-              <MenuItem sx={{ color: "black" }} value="utilities">
-                Utilities
-              </MenuItem>
-              <MenuItem sx={{ color: "black" }} value="entertainment">
-                Entertainment
-              </MenuItem>
-              <MenuItem sx={{ color: "black" }} value="others">
-                Others
-              </MenuItem>
-            </Select>
-          </FormControl>
           <TextField
             label="Description"
             fullWidth
             name="description"
             value={expenseForm.description}
             onChange={handleChange}
-            sx={{ marginBottom: 2 }}
-            InputProps={{
-              style: { color: "black" },
-            }}
+            margin="dense"
           />
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Category</InputLabel>
+            <Select
+              name="category"
+              value={expenseForm.category}
+              onChange={handleChange}
+            >
+              <MenuItem value="Food">Food</MenuItem>
+              <MenuItem value="Travel">Travel</MenuItem>
+              <MenuItem value="Bills">Bills</MenuItem>
+              <MenuItem value="Entertainment">Entertainment</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             label="Date"
             type="date"
@@ -330,26 +425,16 @@ const DashboardPage = () => {
             name="date"
             value={expenseForm.date}
             onChange={handleChange}
-            sx={{ marginBottom: 2 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            InputProps={{
-              style: { color: "black" },
-            }}
+            margin="dense"
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseModal} color="secondary">
+          <Button onClick={handleCloseModal} color="error">
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            color="primary"
-            sx={{ border: "1px solid" }}
-          >
-            {editMode ? "Save Changes" : "Add Expense"}
+          <Button onClick={handleSubmit} color="success">
+            {editMode ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
