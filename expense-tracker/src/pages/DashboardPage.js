@@ -25,7 +25,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { getExpenses, addExpense, deleteExpense, updateExpense } from "../api/api";
+import {
+  getExpenses,
+  addExpense,
+  deleteExpense,
+  updateExpense,
+} from "../api/api";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
 
@@ -81,7 +86,7 @@ const DashboardPage = () => {
       amount: expense.amount,
       category: expense.category,
       description: expense.description,
-      date: expense.date.split("T")[0], 
+      date: expense.date.split("T")[0],
     });
     setOpenModal(true);
   };
@@ -101,7 +106,10 @@ const DashboardPage = () => {
   const handleSubmit = async () => {
     try {
       if (editMode) {
-        const updatedExpense = await updateExpense(selectedExpenseId, expenseForm);
+        const updatedExpense = await updateExpense(
+          selectedExpenseId,
+          expenseForm
+        );
         setExpenses((prevExpenses) =>
           prevExpenses.map((expense) =>
             expense._id === selectedExpenseId ? updatedExpense : expense
@@ -205,13 +213,13 @@ const DashboardPage = () => {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <SearchIcon sx={{color:'#00ff7f'}}/>
+              <SearchIcon sx={{ color: "#00ff7f" }} />
             </InputAdornment>
           ),
         }}
         sx={{
-          marginBottom:'20px',
-          backgroundColor: "black", 
+          marginBottom: "20px",
+          backgroundColor: "black",
           borderRadius: "4px",
           "& .MuiOutlinedInput-root": {
             "& fieldset": {
@@ -277,19 +285,31 @@ const DashboardPage = () => {
                     <Box component="tr">
                       <Box
                         component="th"
-                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                        sx={{
+                          padding: "8px",
+                          border: "1px solid black",
+                          color: "black",
+                        }}
                       >
                         Description
                       </Box>
                       <Box
                         component="th"
-                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                        sx={{
+                          padding: "8px",
+                          border: "1px solid black",
+                          color: "black",
+                        }}
                       >
                         Amount
                       </Box>
                       <Box
                         component="th"
-                        sx={{ padding: "8px", border: "1px solid black", color: "black" }}
+                        sx={{
+                          padding: "8px",
+                          border: "1px solid black",
+                          color: "black",
+                        }}
                       >
                         Actions
                       </Box>
@@ -396,6 +416,25 @@ const DashboardPage = () => {
             value={expenseForm.amount}
             onChange={handleChange}
             margin="dense"
+            InputProps={{
+              style: { color: "black" }, // Text color
+            }}
+            InputLabelProps={{
+              style: { color: "black" }, // Label color
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+            }}
           />
           <TextField
             label="Description"
@@ -404,13 +443,54 @@ const DashboardPage = () => {
             value={expenseForm.description}
             onChange={handleChange}
             margin="dense"
+            InputProps={{
+              style: { color: "black" }, // Text color
+            }}
+            InputLabelProps={{
+              style: { color: "black" }, // Label color
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+            }}
           />
           <FormControl fullWidth margin="dense">
-            <InputLabel>Category</InputLabel>
+            <InputLabel
+              sx={{
+                color: "black",
+              }}
+            >
+              Category
+            </InputLabel>
             <Select
               name="category"
               value={expenseForm.category}
               onChange={handleChange}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "black",
+                },
+              }}
             >
               <MenuItem value="Food">Food</MenuItem>
               <MenuItem value="Travel">Travel</MenuItem>
@@ -426,14 +506,33 @@ const DashboardPage = () => {
             value={expenseForm.date}
             onChange={handleChange}
             margin="dense"
-            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              style: { color: "black" }, // Text color
+            }}
+            InputLabelProps={{
+              style: { color: "black" }, // Label color
+              shrink: true, // Ensures the label doesn't overlap the date value
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&:hover fieldset": {
+                  borderColor: "#1976d2",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+            }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseModal} color="error">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="success">
+          <Button onClick={handleSubmit} color="black" sx={{backgroundColor:'#00ff7f', color:'black'}}>
             {editMode ? "Update" : "Add"}
           </Button>
         </DialogActions>
